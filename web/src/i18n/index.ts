@@ -161,6 +161,11 @@ const resources = {
         imperial: '야드파운드법 (ft²)',
         showDashboard: 'TUI 대시보드 표시',
         saved: '저장됐어요',
+        discordTitle: '디스코드 알림',
+        discordHint: '매일 아침 9시, 지연·임박 유지보수와 미해결 문제를 디스코드로 보내드려요',
+        discordWebhook: '웹훅 URL',
+        sendTest: '테스트 발송',
+        testOk: '보냈어요! 디스코드를 확인하세요',
       },
       more: {
         title: '더보기',
@@ -356,6 +361,11 @@ const resources = {
         imperial: 'Imperial (ft²)',
         showDashboard: 'Show TUI dashboard',
         saved: 'Saved',
+        discordTitle: 'Discord notifications',
+        discordHint: 'Every morning at 9, overdue and upcoming maintenance plus open incidents go to Discord',
+        discordWebhook: 'Webhook URL',
+        sendTest: 'Send test',
+        testOk: 'Sent! Check Discord',
       },
       more: {
         title: 'More',

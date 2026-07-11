@@ -85,6 +85,12 @@ func main() {
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	// Daily Discord digest (overdue/upcoming maintenance, open incidents).
+	go runReminderLoop(ctx, store, log)
+
 	go func() {
 		log.Info("micasa web listening", "addr", *addr, "db", *dbPath)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -93,13 +99,11 @@ func main() {
 		}
 	}()
 
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-	<-sig
+	<-ctx.Done()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := srv.Shutdown(shutdownCtx); err != nil {
 		log.Error("shutdown", "error", err)
 	}
 }
