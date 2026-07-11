@@ -2,11 +2,14 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import {
   AlertTriangle,
+  Boxes,
   ChevronRight,
+  CreditCard,
   DoorOpen,
   FileText,
   Hammer,
   Home,
+  Package,
   ReceiptText,
   Settings,
   Store,
@@ -16,6 +19,9 @@ import { Card } from '../../components/ui/card'
 
 const items = [
   { to: '/projects', icon: Hammer, key: 'more.projects' },
+  { to: '/more/assets', icon: Package, key: 'more.assets' },
+  { to: '/more/consumables', icon: Boxes, key: 'more.consumables' },
+  { to: '/more/expenses', icon: CreditCard, key: 'more.expenses' },
   { to: '/more/rooms', icon: DoorOpen, key: 'more.rooms' },
   { to: '/more/quotes', icon: ReceiptText, key: 'more.quotes' },
   { to: '/more/vendors', icon: Store, key: 'more.vendors' },

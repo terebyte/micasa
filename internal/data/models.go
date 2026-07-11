@@ -561,6 +561,7 @@ const DocumentEntityFloorPlan = "floor_plan"
 const (
 	MarkerKindRoom      = "room"
 	MarkerKindAppliance = "appliance"
+	MarkerKindAsset     = "asset"
 	MarkerKindHA        = "ha"
 )
 
@@ -597,6 +598,8 @@ type PlanMarker struct {
 	Room        Room           `gorm:"constraint:OnDelete:SET NULL;" json:"-"`
 	ApplianceID *string        `gorm:"index"                         json:"appliance_id"`
 	Appliance   Appliance      `gorm:"constraint:OnDelete:SET NULL;" json:"-"`
+	AssetID     *string        `gorm:"index"                         json:"asset_id"`
+	Asset       Asset          `gorm:"constraint:OnDelete:SET NULL;" json:"-"`
 	HAEntity    string         `                                     json:"ha_entity"`
 	CreatedAt   time.Time      `                                     json:"created_at"`
 	UpdatedAt   time.Time      `                                     json:"updated_at"`
@@ -618,6 +621,95 @@ func (x *FloorPlan) BeforeCreate(_ *gorm.DB) error {
 }
 
 func (x *PlanMarker) BeforeCreate(_ *gorm.DB) error {
+	if x.ID == "" {
+		x.ID = uid.New()
+	}
+	return nil
+}
+
+// Home inventory module: assets, consumables, recurring expenses
+// (see plans/home-inventory.md).
+
+const (
+	DeletionEntityAsset            = "asset"
+	DeletionEntityConsumable       = "consumable"
+	DeletionEntityRecurringExpense = "recurring_expense"
+)
+
+// DocumentEntityAsset links a Document to an Asset.
+const DocumentEntityAsset = "asset"
+
+// Recurring expense intervals.
+const (
+	ExpenseIntervalMonthly = "monthly"
+	ExpenseIntervalYearly  = "yearly"
+)
+
+// Asset is any owned thing beyond appliances: furniture, electronics,
+// tools, artwork. Rooms give assets a physical place.
+type Asset struct {
+	ID           string         `gorm:"primaryKey;size:26"                                                   json:"id"`
+	Name         string         `                                                                            json:"name"`
+	Category     string         `                                                                            json:"category"`
+	RoomID       *string        `gorm:"index"                                                                json:"room_id"`
+	Room         Room           `gorm:"constraint:OnDelete:SET NULL;"                                        json:"-"`
+	Brand        string         `                                                                            json:"brand"`
+	SerialNumber string         `                                                                            json:"serial_number"`
+	PurchaseDate *time.Time     `                                                                            json:"purchase_date"`
+	CostCents    *int64         `                                                                            json:"cost_cents"`
+	Notes        string         `                                                                            json:"notes"`
+	Documents    []Document     `gorm:"polymorphic:Entity;polymorphicType:EntityKind;polymorphicValue:asset" json:"-"`
+	CreatedAt    time.Time      `                                                                            json:"created_at"`
+	UpdatedAt    time.Time      `                                                                            json:"updated_at"`
+	DeletedAt    gorm.DeletedAt `gorm:"index"                                                                json:"-"`
+}
+
+// Consumable is a stocked supply (filters, bulbs, batteries). Low stock
+// means Quantity <= MinQuantity.
+type Consumable struct {
+	ID          string         `gorm:"primaryKey;size:26" json:"id"`
+	Name        string         `                          json:"name"`
+	Quantity    int            `                          json:"quantity"`
+	MinQuantity int            `                          json:"min_quantity"`
+	Unit        string         `                          json:"unit"`
+	PurchaseURL string         `                          json:"purchase_url"`
+	Notes       string         `                          json:"notes"`
+	CreatedAt   time.Time      `                          json:"created_at"`
+	UpdatedAt   time.Time      `                          json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index"              json:"-"`
+}
+
+// RecurringExpense is a fixed cost (HOA fee, internet, insurance,
+// subscriptions). Interval is monthly or yearly. Paused uses the zero
+// value for "active" so GORM default handling stays out of the way.
+type RecurringExpense struct {
+	ID          string         `gorm:"primaryKey;size:26" json:"id"`
+	Name        string         `                          json:"name"`
+	AmountCents int64          `                          json:"amount_cents"`
+	Interval    string         `                          json:"interval"           default:"monthly"`
+	BillingDay  int            `                          json:"billing_day"`
+	Paused      bool           `                          json:"paused"`
+	Notes       string         `                          json:"notes"`
+	CreatedAt   time.Time      `                          json:"created_at"`
+	UpdatedAt   time.Time      `                          json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index"              json:"-"`
+}
+
+func (x *Asset) BeforeCreate(_ *gorm.DB) error {
+	if x.ID == "" {
+		x.ID = uid.New()
+	}
+	return nil
+}
+
+func (x *Consumable) BeforeCreate(_ *gorm.DB) error {
+	if x.ID == "" {
+		x.ID = uid.New()
+	}
+	return nil
+}
+
+func (x *RecurringExpense) BeforeCreate(_ *gorm.DB) error {
 	if x.ID == "" {
 		x.ID = uid.New()
 	}

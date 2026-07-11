@@ -25,8 +25,8 @@
 - [x] 디스코드 알림: 웹훅 설정(설정 화면) + 테스트 발송 + 매일 9시 유지보수/문제 다이제스트 (internal/notify + cmd/web/reminder.go)
 - [x] P4 도면/배치도: Room·FloorPlan·PlanMarker 엔티티 + 도면 이미지(Document 재활용) + 마커 오버레이 UI(편집/보기 모드) + HA 프록시(status/states/toggle) + 설정 HA 연동 (설계: plans/floorplan.md)
 - [ ] P4 잔여: TUI 탭(rooms/plans) 배선 - 웹 퍼스트라 보류(plans/floorplan.md 근거), FTS에 rooms 추가 여부
-- [ ] 도면 편집 고도화(추후): 마커 드래그 이동, 도면 이미지 교체·이름변경·삭제 UI, 방 영역 표시
-- [ ] 정기지출 엔티티
+- [x] 도면 편집 고도화: 마커 드래그 이동, 도면 이름변경·이미지 교체·삭제 UI, 물건 마커 (방 영역 표시만 추후)
+- [x] 인벤토리 확장: Asset(물건)·Consumable(소모품, 부족시 대시보드·다이제스트)·RecurringExpense(고정지출, 월 고정비 타일) - plans/home-inventory.md
 - [ ] 문서-가전 연결 UI (API는 entity_kind/entity_id 지원됨)
 - [ ] auth(household 로그인) 추가
 - [ ] 프론트 vitest 테스트

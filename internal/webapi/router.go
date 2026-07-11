@@ -73,6 +73,31 @@ func NewRouter(store *data.Store, log *slog.Logger) http.Handler {
 		setID:  func(r *data.Room, id string) { r.ID = id },
 	})
 
+	registerEntity(mux, log, "/api/assets", "asset", entityOps[data.Asset]{
+		list:   func() ([]data.Asset, error) { return store.ListAssets(false) },
+		get:    store.GetAsset,
+		create: store.CreateAsset,
+		update: store.UpdateAsset,
+		remove: store.DeleteAsset,
+		setID:  func(a *data.Asset, id string) { a.ID = id },
+	})
+	registerEntity(mux, log, "/api/consumables", "consumable", entityOps[data.Consumable]{
+		list:   func() ([]data.Consumable, error) { return store.ListConsumables(false) },
+		get:    store.GetConsumable,
+		create: store.CreateConsumable,
+		update: store.UpdateConsumable,
+		remove: store.DeleteConsumable,
+		setID:  func(c *data.Consumable, id string) { c.ID = id },
+	})
+	registerEntity(mux, log, "/api/expenses", "recurring expense", entityOps[data.RecurringExpense]{
+		list:   func() ([]data.RecurringExpense, error) { return store.ListRecurringExpenses(false) },
+		get:    store.GetRecurringExpense,
+		create: store.CreateRecurringExpense,
+		update: store.UpdateRecurringExpense,
+		remove: store.DeleteRecurringExpense,
+		setID:  func(e *data.RecurringExpense, id string) { e.ID = id },
+	})
+
 	registerListOnly(mux, log, "/api/project-types", "project type", store.ProjectTypes)
 	registerListOnly(mux, log, "/api/maintenance-categories", "maintenance category", store.MaintenanceCategories)
 

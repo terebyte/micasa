@@ -8,6 +8,9 @@ import { DashboardPage } from './features/dashboard/DashboardPage'
 import { AppliancesPage } from './features/appliances/AppliancesPage'
 import { GenericEntityPage } from './features/entities/framework'
 import {
+  assetsConfig,
+  consumablesConfig,
+  expensesConfig,
   incidentsConfig,
   maintenanceConfig,
   projectsConfig,
@@ -97,6 +100,9 @@ function Shell() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/floorplan" element={<FloorplanPage />} />
             <Route path="/more/rooms" element={<GenericEntityPage config={roomsConfig} />} />
+            <Route path="/more/assets" element={<GenericEntityPage config={assetsConfig} />} />
+            <Route path="/more/consumables" element={<GenericEntityPage config={consumablesConfig} />} />
+            <Route path="/more/expenses" element={<GenericEntityPage config={expensesConfig} />} />
             <Route path="/maintenance" element={<GenericEntityPage config={maintenanceConfig} />} />
             <Route path="/projects" element={<GenericEntityPage config={projectsConfig} />} />
             <Route path="/appliances" element={<AppliancesPage />} />

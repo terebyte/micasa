@@ -8,7 +8,9 @@ package data
 // Table name constants derived from GORM model structs.
 const (
 	TableAppliances            = "appliances"
+	TableAssets                = "assets"
 	TableChatInputs            = "chat_inputs"
+	TableConsumables           = "consumables"
 	TableDeletionRecords       = "deletion_records"
 	TableDocuments             = "documents"
 	TableFloorPlans            = "floor_plans"
@@ -20,6 +22,7 @@ const (
 	TableProjectTypes          = "project_types"
 	TableProjects              = "projects"
 	TableQuotes                = "quotes"
+	TableRecurringExpenses     = "recurring_expenses"
 	TableRooms                 = "rooms"
 	TableServiceLogEntries     = "service_log_entries"
 	TableSettings              = "settings"
@@ -33,13 +36,17 @@ const (
 	ColActualCents       = "actual_cents"
 	ColAddressLine1      = "address_line1"
 	ColAddressLine2      = "address_line2"
+	ColAmountCents       = "amount_cents"
 	ColApplianceID       = "appliance_id"
 	ColAppliedAt         = "applied_at"
+	ColAssetID           = "asset_id"
 	ColBasementType      = "basement_type"
 	ColBathrooms         = "bathrooms"
 	ColBedrooms          = "bedrooms"
+	ColBillingDay        = "billing_day"
 	ColBrand             = "brand"
 	ColBudgetCents       = "budget_cents"
+	ColCategory          = "category"
 	ColCategoryID        = "category_id"
 	ColChecksumSHA256    = "sha256"
 	ColCity              = "city"
@@ -78,6 +85,7 @@ const (
 	ColInsuranceCarrier  = "insurance_carrier"
 	ColInsurancePolicy   = "insurance_policy"
 	ColInsuranceRenewal  = "insurance_renewal"
+	ColInterval          = "interval"
 	ColIntervalMonths    = "interval_months"
 	ColKey               = "key"
 	ColKind              = "kind"
@@ -93,6 +101,7 @@ const (
 	ColManualText        = "manual_text"
 	ColManualURL         = "manual_url"
 	ColMaterialsCents    = "materials_cents"
+	ColMinQuantity       = "min_quantity"
 	ColModelNumber       = "model_number"
 	ColName              = "name"
 	ColNickname          = "nickname"
@@ -100,6 +109,7 @@ const (
 	ColOpType            = "op_type"
 	ColOtherCents        = "other_cents"
 	ColParkingType       = "parking_type"
+	ColPaused            = "paused"
 	ColPayload           = "payload"
 	ColPhone             = "phone"
 	ColPostalCode        = "postal_code"
@@ -108,6 +118,8 @@ const (
 	ColProjectTypeID     = "project_type_id"
 	ColPropertyTaxCents  = "property_tax_cents"
 	ColPurchaseDate      = "purchase_date"
+	ColPurchaseURL       = "purchase_url"
+	ColQuantity          = "quantity"
 	ColReceivedDate      = "received_date"
 	ColRelayURL          = "relay_url"
 	ColRestoredAt        = "restored_at"
@@ -129,6 +141,7 @@ const (
 	ColTargetID          = "target_id"
 	ColTitle             = "title"
 	ColTotalCents        = "total_cents"
+	ColUnit              = "unit"
 	ColUpdatedAt         = "updated_at"
 	ColValue             = "value"
 	ColVendorID          = "vendor_id"
@@ -164,6 +177,9 @@ func Models() []any {
 		&Room{},
 		&FloorPlan{},
 		&PlanMarker{},
+		&Asset{},
+		&Consumable{},
+		&RecurringExpense{},
 	}
 }
 
@@ -187,8 +203,26 @@ var TableExtractColumns = map[string][]metaColumn{
 		{Name: "cost_cents", JSONType: "integer"},
 		{Name: "notes", JSONType: "string"},
 	},
+	TableAssets: {
+		{Name: "name", JSONType: "string"},
+		{Name: "category", JSONType: "string"},
+		{Name: "room_id", JSONType: "string"},
+		{Name: "brand", JSONType: "string"},
+		{Name: "serial_number", JSONType: "string"},
+		{Name: "purchase_date", JSONType: "string"},
+		{Name: "cost_cents", JSONType: "integer"},
+		{Name: "notes", JSONType: "string"},
+	},
 	TableChatInputs: {
 		{Name: "input", JSONType: "string"},
+	},
+	TableConsumables: {
+		{Name: "name", JSONType: "string"},
+		{Name: "quantity", JSONType: "integer"},
+		{Name: "min_quantity", JSONType: "integer"},
+		{Name: "unit", JSONType: "string"},
+		{Name: "purchase_url", JSONType: "string"},
+		{Name: "notes", JSONType: "string"},
 	},
 	TableDeletionRecords: {
 		{Name: "entity", JSONType: "string"},
@@ -267,6 +301,7 @@ var TableExtractColumns = map[string][]metaColumn{
 		{Name: "kind", JSONType: "string"},
 		{Name: "room_id", JSONType: "string"},
 		{Name: "appliance_id", JSONType: "string"},
+		{Name: "asset_id", JSONType: "string"},
 		{Name: "ha_entity", JSONType: "string"},
 	},
 	TableProjectTypes: {
@@ -285,6 +320,13 @@ var TableExtractColumns = map[string][]metaColumn{
 		{Name: "total_cents", JSONType: "integer"},
 		{Name: "labor_cents", JSONType: "integer"},
 		{Name: "materials_cents", JSONType: "integer"},
+		{Name: "notes", JSONType: "string"},
+	},
+	TableRecurringExpenses: {
+		{Name: "name", JSONType: "string"},
+		{Name: "amount_cents", JSONType: "integer"},
+		{Name: "interval", JSONType: "string"},
+		{Name: "billing_day", JSONType: "integer"},
 		{Name: "notes", JSONType: "string"},
 	},
 	TableRooms: {

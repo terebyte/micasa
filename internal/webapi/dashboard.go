@@ -24,8 +24,10 @@ type dashboardResponse struct {
 	OpenIncidents          []data.Incident        `json:"open_incidents"`
 	ExpiringWarranties     []data.Appliance       `json:"expiring_warranties"`
 	RecentServiceLogs      []data.ServiceLogEntry `json:"recent_service_logs"`
+	LowStockConsumables    []data.Consumable      `json:"low_stock_consumables"`
 	YTDServiceSpendCents   int64                  `json:"ytd_service_spend_cents"`
 	TotalProjectSpendCents int64                  `json:"total_project_spend_cents"`
+	MonthlyFixedCostCents  int64                  `json:"monthly_fixed_cost_cents"`
 	Counts                 map[string]int         `json:"counts"`
 }
 
@@ -65,6 +67,12 @@ func (h *handlers) dashboard(w http.ResponseWriter, _ *http.Request) {
 	if resp.TotalProjectSpendCents, err = h.store.TotalProjectSpendCents(); fail("project spend", err) {
 		return
 	}
+	if resp.LowStockConsumables, err = h.store.ListLowStockConsumables(); fail("consumables", err) {
+		return
+	}
+	if resp.MonthlyFixedCostCents, err = h.store.MonthlyFixedCostCents(); fail("fixed cost", err) {
+		return
+	}
 
 	counts, err := h.store.RowCounts(
 		data.TableAppliances,
@@ -75,6 +83,8 @@ func (h *handlers) dashboard(w http.ResponseWriter, _ *http.Request) {
 		data.TableIncidents,
 		data.TableServiceLogEntries,
 		data.TableDocuments,
+		data.TableAssets,
+		data.TableConsumables,
 	)
 	if fail("counts", err) {
 		return

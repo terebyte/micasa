@@ -2,7 +2,17 @@ import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { DoorOpen, Lightbulb, Pencil, Plus, Refrigerator, Trash2, Upload } from 'lucide-react'
+import {
+  DoorOpen,
+  Lightbulb,
+  Package,
+  Pencil,
+  Plus,
+  Refrigerator,
+  Settings2,
+  Trash2,
+  Upload,
+} from 'lucide-react'
 import { api } from '../../lib/api'
 import { cn } from '../../lib/utils'
 import { Button } from '../../components/ui/button'
@@ -22,9 +32,10 @@ interface Marker {
   x: number
   y: number
   label: string
-  kind: 'room' | 'appliance' | 'ha'
+  kind: 'room' | 'appliance' | 'asset' | 'ha'
   room_id: string | null
   appliance_id: string | null
+  asset_id: string | null
   ha_entity: string
 }
 
@@ -45,6 +56,7 @@ interface Named {
 const kindIcon = {
   room: DoorOpen,
   appliance: Refrigerator,
+  asset: Package,
   ha: Lightbulb,
 }
 
@@ -59,6 +71,38 @@ async function uploadPlanImage(planID: string, file: File): Promise<void> {
     const body = (await res.json().catch(() => null)) as { error?: string } | null
     throw new Error(body?.error ?? `HTTP ${res.status}`)
   }
+}
+
+function TargetSelect({
+  path,
+  value,
+  onChange,
+  labelKey,
+}: {
+  path: string
+  value: string
+  onChange: (v: string) => void
+  labelKey: string
+}) {
+  const { t } = useTranslation()
+  const options = useQuery({ queryKey: [path], queryFn: () => api.get<Named[]>(path) })
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-sm font-medium text-body">{t(labelKey)}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm sm:h-10"
+      >
+        <option value="">{t('common.none')}</option>
+        {(options.data ?? []).map((o) => (
+          <option key={o.id} value={o.id}>
+            {o.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
 }
 
 function MarkerForm({
@@ -79,16 +123,8 @@ function MarkerForm({
   const [kind, setKind] = useState<Marker['kind']>(initial.kind ?? 'ha')
   const [roomID, setRoomID] = useState(initial.room_id ?? '')
   const [applianceID, setApplianceID] = useState(initial.appliance_id ?? '')
+  const [assetID, setAssetID] = useState(initial.asset_id ?? '')
   const [haEntity, setHAEntity] = useState(initial.ha_entity ?? '')
-
-  const rooms = useQuery({ queryKey: ['/rooms'], queryFn: () => api.get<Named[]>('/rooms') })
-  const appliances = useQuery({
-    queryKey: ['/appliances'],
-    queryFn: () => api.get<Named[]>('/appliances'),
-  })
-
-  const selectClass =
-    'h-11 w-full rounded-md border border-input bg-background px-3 text-sm sm:h-10'
 
   return (
     <div className="space-y-4">
@@ -98,46 +134,30 @@ function MarkerForm({
       </label>
       <label className="block">
         <span className="mb-1.5 block text-sm font-medium text-body">{t('floorplan.markerKind')}</span>
-        <select value={kind} onChange={(e) => setKind(e.target.value as Marker['kind'])} className={selectClass}>
+        <select
+          value={kind}
+          onChange={(e) => setKind(e.target.value as Marker['kind'])}
+          className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm sm:h-10"
+        >
           <option value="ha">{t('floorplan.kindHA')}</option>
           <option value="appliance">{t('floorplan.kindAppliance')}</option>
+          <option value="asset">{t('floorplan.kindAsset')}</option>
           <option value="room">{t('floorplan.kindRoom')}</option>
         </select>
       </label>
       {kind === 'room' ? (
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-body">{t('room.title')}</span>
-          <select value={roomID} onChange={(e) => setRoomID(e.target.value)} className={selectClass}>
-            <option value="">{t('common.none')}</option>
-            {(rooms.data ?? []).map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <TargetSelect path="/rooms" value={roomID} onChange={setRoomID} labelKey="room.title" />
       ) : null}
       {kind === 'appliance' ? (
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-body">{t('appliance.title')}</span>
-          <select value={applianceID} onChange={(e) => setApplianceID(e.target.value)} className={selectClass}>
-            <option value="">{t('common.none')}</option>
-            {(appliances.data ?? []).map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <TargetSelect path="/appliances" value={applianceID} onChange={setApplianceID} labelKey="appliance.title" />
+      ) : null}
+      {kind === 'asset' ? (
+        <TargetSelect path="/assets" value={assetID} onChange={setAssetID} labelKey="asset.title" />
       ) : null}
       {kind === 'ha' ? (
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium text-body">{t('floorplan.haEntity')}</span>
-          <Input
-            value={haEntity}
-            onChange={(e) => setHAEntity(e.target.value)}
-            placeholder="light.living_room"
-          />
+          <Input value={haEntity} onChange={(e) => setHAEntity(e.target.value)} placeholder="light.living_room" />
         </label>
       ) : null}
       <div className="flex items-center justify-between pt-1">
@@ -160,6 +180,7 @@ function MarkerForm({
                 kind,
                 room_id: kind === 'room' && roomID ? roomID : null,
                 appliance_id: kind === 'appliance' && applianceID ? applianceID : null,
+                asset_id: kind === 'asset' && assetID ? assetID : null,
                 ha_entity: kind === 'ha' ? haEntity : '',
               })
             }
@@ -187,14 +208,27 @@ export function FloorplanPage() {
   const [editMode, setEditMode] = useState(false)
   const [newPlanName, setNewPlanName] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+  const replaceRef = useRef<HTMLInputElement>(null)
   const imgWrapRef = useRef<HTMLDivElement>(null)
 
+  const invalidatePlans = () => qc.invalidateQueries({ queryKey: ['floorplans'] })
   const createPlan = useMutation({
     mutationFn: (name: string) => api.post<FloorPlan>('/floorplans', { name }),
     onSuccess: (created) => {
-      qc.invalidateQueries({ queryKey: ['floorplans'] })
+      invalidatePlans()
       setSelectedID(created.id)
       setNewPlanName('')
+    },
+  })
+  const updatePlan = useMutation({
+    mutationFn: (p: FloorPlan) => api.put<FloorPlan>(`/floorplans/${p.id}`, p),
+    onSuccess: invalidatePlans,
+  })
+  const deletePlan = useMutation({
+    mutationFn: (id: string) => api.del(`/floorplans/${id}`),
+    onSuccess: () => {
+      invalidatePlans()
+      setSelectedID(null)
     },
   })
 
@@ -208,6 +242,14 @@ export function FloorplanPage() {
   const upload = useMutation({
     mutationFn: (file: File) => uploadPlanImage(plan!.id, file),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['plan-image', plan?.id] }),
+  })
+  const replaceImage = useMutation({
+    mutationFn: async (file: File) => {
+      if (imageDoc) await api.del(`/documents/${imageDoc.id}`)
+      await uploadPlanImage(plan!.id, file)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['plan-image', plan?.id] }),
+    onError: (err) => window.alert(err.message),
   })
 
   const markers = useQuery({
@@ -248,17 +290,56 @@ export function FloorplanPage() {
     onError: (err) => window.alert(err.message),
   })
 
-  const [dialog, setDialog] = useState<{ mode: 'new'; x: number; y: number } | { mode: 'edit'; marker: Marker } | null>(null)
+  const [dialog, setDialog] = useState<
+    { mode: 'new'; x: number; y: number } | { mode: 'edit'; marker: Marker } | null
+  >(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [renameValue, setRenameValue] = useState('')
+
+  // Drag-to-move markers in edit mode (pointer events cover touch).
+  const [drag, setDrag] = useState<{ id: string; x: number; y: number; moved: boolean } | null>(null)
+  const suppressClick = useRef(false)
+
+  const percentAt = (clientX: number, clientY: number) => {
+    const rect = imgWrapRef.current!.getBoundingClientRect()
+    const x = Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100))
+    const y = Math.min(100, Math.max(0, ((clientY - rect.top) / rect.height) * 100))
+    return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 }
+  }
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!drag || !imgWrapRef.current) return
+    const { x, y } = percentAt(e.clientX, e.clientY)
+    setDrag({ ...drag, x, y, moved: true })
+  }
+
+  const onPointerUp = () => {
+    if (!drag) return
+    if (drag.moved) {
+      const marker = markers.data?.find((m) => m.id === drag.id)
+      if (marker) {
+        updateMarker.mutate({ id: drag.id, patch: { ...marker, x: drag.x, y: drag.y } })
+      }
+      suppressClick.current = true
+    }
+    setDrag(null)
+  }
 
   const onImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (suppressClick.current) {
+      suppressClick.current = false
+      return
+    }
     if (!editMode || !imgWrapRef.current) return
-    const rect = imgWrapRef.current.getBoundingClientRect()
-    const x = ((e.clientX - rect.left) / rect.width) * 100
-    const y = ((e.clientY - rect.top) / rect.height) * 100
-    setDialog({ mode: 'new', x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 })
+    const { x, y } = percentAt(e.clientX, e.clientY)
+    setDialog({ mode: 'new', x, y })
   }
 
   const onMarkerClick = (marker: Marker) => {
+    if (suppressClick.current) {
+      suppressClick.current = false
+      return
+    }
     if (editMode) {
       setDialog({ mode: 'edit', marker })
       return
@@ -266,6 +347,9 @@ export function FloorplanPage() {
     switch (marker.kind) {
       case 'appliance':
         navigate('/appliances')
+        break
+      case 'asset':
+        navigate('/more/assets')
         break
       case 'room':
         navigate('/more/rooms')
@@ -299,6 +383,17 @@ export function FloorplanPage() {
                 ))}
               </select>
             ) : null}
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={t('floorplan.planSettings')}
+              onClick={() => {
+                setRenameValue(plan.name)
+                setSettingsOpen(true)
+              }}
+            >
+              <Settings2 className="h-5 w-5" />
+            </Button>
             <Button variant={editMode ? 'primary' : 'secondary'} size="sm" onClick={() => setEditMode((v) => !v)}>
               <Pencil className="h-4 w-4" />
               {editMode ? t('floorplan.editing') : t('common.edit')}
@@ -316,7 +411,10 @@ export function FloorplanPage() {
               onChange={(e) => setNewPlanName(e.target.value)}
               placeholder={t('floorplan.namePlaceholder')}
             />
-            <Button disabled={!newPlanName.trim() || createPlan.isPending} onClick={() => createPlan.mutate(newPlanName.trim())}>
+            <Button
+              disabled={!newPlanName.trim() || createPlan.isPending}
+              onClick={() => createPlan.mutate(newPlanName.trim())}
+            >
               <Plus className="h-4 w-4" />
               {t('common.add')}
             </Button>
@@ -325,12 +423,7 @@ export function FloorplanPage() {
       ) : !imageDoc ? (
         <Card className="max-w-md">
           <p className="mb-3 text-sm text-muted-foreground">{t('floorplan.uploadHint')}</p>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="mb-3 block w-full text-sm"
-          />
+          <input ref={fileRef} type="file" accept="image/*" className="mb-3 block w-full text-sm" />
           <Button
             disabled={upload.isPending}
             onClick={() => {
@@ -346,12 +439,20 @@ export function FloorplanPage() {
       ) : (
         <>
           {editMode ? (
-            <p className="mb-2 text-sm text-muted-foreground">{t('floorplan.tapToAdd')}</p>
+            <p className="mb-2 text-sm text-muted-foreground">
+              {t('floorplan.tapToAdd')} · {t('floorplan.dragHint')}
+            </p>
           ) : null}
           <div
             ref={imgWrapRef}
-            className={cn('relative inline-block max-w-full overflow-hidden rounded-lg border', editMode && 'cursor-crosshair')}
+            className={cn(
+              'relative inline-block max-w-full overflow-hidden rounded-lg border',
+              editMode && 'cursor-crosshair',
+            )}
             onClick={onImageClick}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerLeave={onPointerUp}
           >
             <img
               src={`/api/documents/${imageDoc.id}/download`}
@@ -362,6 +463,7 @@ export function FloorplanPage() {
             {(markers.data ?? []).map((m) => {
               const Icon = kindIcon[m.kind] ?? Lightbulb
               const state = m.kind === 'ha' ? stateOf(m.ha_entity) : undefined
+              const pos = drag && drag.id === m.id ? drag : m
               return (
                 <button
                   key={m.id}
@@ -371,15 +473,19 @@ export function FloorplanPage() {
                     e.stopPropagation()
                     onMarkerClick(m)
                   }}
+                  onPointerDown={(e) => {
+                    if (!editMode) return
+                    e.stopPropagation()
+                    setDrag({ id: m.id, x: m.x, y: m.y, moved: false })
+                  }}
                   className="absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{ left: `${m.x}%`, top: `${m.y}%` }}
+                  style={{ left: `${pos.x}%`, top: `${pos.y}%`, touchAction: editMode ? 'none' : undefined }}
                 >
                   <span
                     className={cn(
                       'flex h-9 w-9 items-center justify-center rounded-full border shadow-sm transition-transform active:scale-95',
-                      state === 'on'
-                        ? 'bg-tint-yellow border-foreground/20'
-                        : 'bg-card/95 border-border',
+                      state === 'on' ? 'bg-tint-yellow border-foreground/20' : 'bg-card/95 border-border',
+                      drag?.id === m.id && 'ring-2 ring-ring',
                     )}
                   >
                     <Icon className="h-4.5 w-4.5" />
@@ -426,6 +532,58 @@ export function FloorplanPage() {
               }
             }}
           />
+        ) : null}
+      </Dialog>
+
+      <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)} title={t('floorplan.planSettings')}>
+        {plan ? (
+          <div className="space-y-4">
+            <label className="block">
+              <span className="mb-1.5 block text-sm font-medium text-body">{t('floorplan.rename')}</span>
+              <div className="flex gap-2">
+                <Input value={renameValue} onChange={(e) => setRenameValue(e.target.value)} />
+                <Button
+                  variant="secondary"
+                  disabled={!renameValue.trim() || updatePlan.isPending}
+                  onClick={() => updatePlan.mutate({ ...plan, name: renameValue.trim() })}
+                >
+                  {t('common.save')}
+                </Button>
+              </div>
+            </label>
+            <div>
+              <span className="mb-1.5 block text-sm font-medium text-body">{t('floorplan.replaceImage')}</span>
+              <div className="flex items-center gap-2">
+                <input ref={replaceRef} type="file" accept="image/*" className="block w-full text-sm" />
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={replaceImage.isPending}
+                  onClick={() => {
+                    const f = replaceRef.current?.files?.[0]
+                    if (f) replaceImage.mutate(f)
+                  }}
+                >
+                  <Upload className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="border-t pt-4">
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={deletePlan.isPending}
+                onClick={() => {
+                  if (window.confirm(t('floorplan.deletePlanConfirm'))) {
+                    deletePlan.mutate(plan.id, { onSuccess: () => setSettingsOpen(false) })
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+                {t('floorplan.deletePlan')}
+              </Button>
+            </div>
+          </div>
         ) : null}
       </Dialog>
     </section>

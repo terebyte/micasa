@@ -15,6 +15,79 @@ export const roomsConfig: EntityConfig = {
   ],
 }
 
+export const assetsConfig: EntityConfig = {
+  apiPath: '/assets',
+  i18nKey: 'asset',
+  titleField: 'name',
+  subtitleField: 'category',
+  fields: [
+    { key: 'name', labelKey: 'asset.name', type: 'text', required: true },
+    { key: 'category', labelKey: 'asset.category', type: 'text', placeholderKey: 'asset.categoryHint' },
+    { key: 'room_id', labelKey: 'room.title', type: 'select', optionsPath: '/rooms' },
+    { key: 'brand', labelKey: 'appliance.brand', type: 'text' },
+    { key: 'serial_number', labelKey: 'appliance.serialNumber', type: 'text' },
+    { key: 'purchase_date', labelKey: 'appliance.purchaseDate', type: 'date' },
+    { key: 'cost_cents', labelKey: 'common.cost', type: 'money' },
+    { key: 'notes', labelKey: 'common.notes', type: 'textarea' },
+  ],
+  cardMeta: (item) =>
+    item.cost_cents != null ? (
+      <p className="text-sm text-muted-foreground">{formatCents(item.cost_cents as number)}</p>
+    ) : null,
+}
+
+export const consumablesConfig: EntityConfig = {
+  apiPath: '/consumables',
+  i18nKey: 'consumable',
+  titleField: 'name',
+  fields: [
+    { key: 'name', labelKey: 'consumable.name', type: 'text', required: true },
+    { key: 'quantity', labelKey: 'consumable.quantity', type: 'number', required: true },
+    { key: 'min_quantity', labelKey: 'consumable.minQuantity', type: 'number' },
+    { key: 'unit', labelKey: 'consumable.unit', type: 'text', placeholderKey: 'consumable.unitHint' },
+    { key: 'purchase_url', labelKey: 'consumable.purchaseUrl', type: 'text' },
+    { key: 'notes', labelKey: 'common.notes', type: 'textarea' },
+  ],
+  cardMeta: (item, t) => {
+    const qty = Number(item.quantity ?? 0)
+    const min = Number(item.min_quantity ?? 0)
+    const low = qty <= min
+    return (
+      <p className={`text-sm ${low ? 'font-medium text-destructive' : 'text-muted-foreground'}`}>
+        {qty}
+        {String(item.unit ?? '')} {low ? `· ${t('consumable.lowStock')}` : ''}
+      </p>
+    )
+  },
+}
+
+export const expensesConfig: EntityConfig = {
+  apiPath: '/expenses',
+  i18nKey: 'expense',
+  titleField: 'name',
+  fields: [
+    { key: 'name', labelKey: 'expense.name', type: 'text', required: true },
+    { key: 'amount_cents', labelKey: 'expense.amount', type: 'money', required: true },
+    {
+      key: 'interval',
+      labelKey: 'expense.interval',
+      type: 'select',
+      required: true,
+      clearable: false,
+      staticOptions: [opt('monthly', 'interval.monthly'), opt('yearly', 'interval.yearly')],
+    },
+    { key: 'billing_day', labelKey: 'expense.billingDay', type: 'number' },
+    { key: 'paused', labelKey: 'expense.paused', type: 'toggle' },
+    { key: 'notes', labelKey: 'common.notes', type: 'textarea' },
+  ],
+  cardMeta: (item, t) => (
+    <p className="text-sm text-muted-foreground">
+      {formatCents(item.amount_cents as number)} / {t(`enum.interval.${String(item.interval)}`)}
+      {item.paused ? ` · ${t('expense.pausedBadge')}` : ''}
+    </p>
+  ),
+}
+
 export const vendorsConfig: EntityConfig = {
   apiPath: '/vendors',
   i18nKey: 'vendor',

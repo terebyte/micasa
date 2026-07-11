@@ -14,7 +14,7 @@ import { Input, Textarea } from '../../components/ui/input'
 // instance of GenericEntityPage over its config, so new entities cost a
 // config object rather than a page.
 
-export type FieldType = 'text' | 'textarea' | 'date' | 'number' | 'money' | 'select'
+export type FieldType = 'text' | 'textarea' | 'date' | 'number' | 'money' | 'select' | 'toggle'
 
 export interface SelectOption {
   value: string
@@ -102,6 +102,9 @@ function fieldToForm(item: Row, fields: FieldDef[]): Record<string, string> {
       case 'number':
         out[f.key] = v === null || v === undefined || v === 0 ? '' : String(v)
         break
+      case 'toggle':
+        out[f.key] = v ? 'true' : ''
+        break
       default:
         out[f.key] = v === null || v === undefined ? '' : String(v)
     }
@@ -125,6 +128,9 @@ function formToPayload(form: Record<string, string>, fields: FieldDef[]): Row {
         break
       case 'select':
         out[f.key] = raw === '' && f.clearable !== false ? null : raw
+        break
+      case 'toggle':
+        out[f.key] = raw === 'true'
         break
       default:
         out[f.key] = raw
@@ -187,6 +193,16 @@ function GenericForm({
             break
           case 'select':
             control = <SelectField field={f} value={value} onChange={set} />
+            break
+          case 'toggle':
+            control = (
+              <input
+                type="checkbox"
+                checked={value === 'true'}
+                onChange={(e) => set(e.target.checked ? 'true' : '')}
+                className="h-5 w-5 accent-primary"
+              />
+            )
             break
           default:
             control = (

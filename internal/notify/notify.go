@@ -62,6 +62,10 @@ func BuildDigest(store *data.Store, now time.Time) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("list incidents: %w", err)
 	}
+	lowStock, err := store.ListLowStockConsumables()
+	if err != nil {
+		return "", fmt.Errorf("list consumables: %w", err)
+	}
 
 	var overdue, upcoming []data.MaintenanceItem
 	horizon := now.Add(upcomingWindow)
@@ -77,7 +81,7 @@ func BuildDigest(store *data.Store, now time.Time) (string, error) {
 		}
 	}
 
-	if len(overdue) == 0 && len(upcoming) == 0 && len(incidents) == 0 {
+	if len(overdue) == 0 && len(upcoming) == 0 && len(incidents) == 0 && len(lowStock) == 0 {
 		return "", nil
 	}
 
@@ -89,6 +93,12 @@ func BuildDigest(store *data.Store, now time.Time) (string, error) {
 		fmt.Fprintf(&b, "\n🚨 **미해결 문제** (%d)\n", len(incidents))
 		for _, i := range incidents {
 			fmt.Fprintf(&b, "- %s\n", i.Title)
+		}
+	}
+	if len(lowStock) > 0 {
+		fmt.Fprintf(&b, "\n🧻 **소모품 부족** (%d)\n", len(lowStock))
+		for _, c := range lowStock {
+			fmt.Fprintf(&b, "- %s (%d/%d %s)\n", c.Name, c.Quantity, c.MinQuantity, c.Unit)
 		}
 	}
 	return strings.TrimRight(b.String(), "\n"), nil

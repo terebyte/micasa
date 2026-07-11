@@ -11,8 +11,10 @@ interface Dashboard {
   open_incidents: Array<{ id: string; title: string; severity: string }>
   expiring_warranties: Array<{ id: string; name: string; warranty_expiry: string | null }>
   recent_service_logs: Array<{ id: string; serviced_at: string; notes: string; cost_cents: number | null }>
+  low_stock_consumables: Array<{ id: string; name: string; quantity: number; min_quantity: number; unit: string }>
   ytd_service_spend_cents: number
   total_project_spend_cents: number
+  monthly_fixed_cost_cents: number
   counts: Record<string, number>
 }
 
@@ -63,6 +65,8 @@ export function DashboardPage() {
         <StatTile to="/more/incidents" tint="bg-tint-rose" label={t('dashboard.openIncidents')} value={data.open_incidents.length} />
         <StatTile to="/projects" tint="bg-tint-sky" label={t('dashboard.activeProjects')} value={data.active_projects.length} />
         <StatTile to="/appliances" tint="bg-tint-mint" label={t('dashboard.appliances')} value={data.counts['appliances'] ?? 0} />
+        <StatTile to="/more/consumables" tint="bg-tint-peach" label={t('dashboard.lowStock')} value={data.low_stock_consumables.length} />
+        <StatTile to="/more/expenses" tint="bg-tint-lavender" label={t('dashboard.monthlyFixed')} value={formatCents(data.monthly_fixed_cost_cents)} />
         <StatTile to="/more/service-logs" tint="bg-tint-yellow" label={t('dashboard.ytdSpend')} value={formatCents(data.ytd_service_spend_cents)} />
         <StatTile to="/projects" tint="bg-tint-lavender" label={t('dashboard.projectSpend')} value={formatCents(data.total_project_spend_cents)} />
       </div>
@@ -92,6 +96,21 @@ export function DashboardPage() {
                 <span className="truncate text-sm">{i.title}</span>
                 <span className="ml-3 shrink-0 text-sm text-muted-foreground">
                   {t(`enum.severity.${i.severity}`)}
+                </span>
+              </Link>
+            ))}
+          </Card>
+        </Section>
+      ) : null}
+
+      {data.low_stock_consumables.length > 0 ? (
+        <Section title={t('dashboard.lowStock')}>
+          <Card className="divide-y p-0 sm:p-0">
+            {data.low_stock_consumables.map((c) => (
+              <Link key={c.id} to="/more/consumables" className="flex items-center justify-between px-4 py-3">
+                <span className="truncate text-sm">{c.name}</span>
+                <span className="ml-3 shrink-0 text-sm font-medium text-destructive">
+                  {c.quantity}/{c.min_quantity} {c.unit}
                 </span>
               </Link>
             ))}
