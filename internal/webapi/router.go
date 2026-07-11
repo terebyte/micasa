@@ -64,9 +64,20 @@ func NewRouter(store *data.Store, log *slog.Logger) http.Handler {
 		setID:  func(i *data.Incident, id string) { i.ID = id },
 	})
 
+	registerEntity(mux, log, "/api/rooms", "room", entityOps[data.Room]{
+		list:   func() ([]data.Room, error) { return store.ListRooms(false) },
+		get:    store.GetRoom,
+		create: store.CreateRoom,
+		update: store.UpdateRoom,
+		remove: store.DeleteRoom,
+		setID:  func(r *data.Room, id string) { r.ID = id },
+	})
+
 	registerListOnly(mux, log, "/api/project-types", "project type", store.ProjectTypes)
 	registerListOnly(mux, log, "/api/maintenance-categories", "maintenance category", store.MaintenanceCategories)
 
+	h.registerFloorPlans(mux)
+	h.registerHA(mux)
 	h.registerQuotes(mux)
 	h.registerServiceLogs(mux)
 	h.registerHouse(mux)

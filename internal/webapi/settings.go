@@ -18,6 +18,8 @@ type settingsResponse struct {
 	UnitSystem        string `json:"unit_system"`
 	ShowDashboard     bool   `json:"show_dashboard"`
 	DiscordWebhookURL string `json:"discord_webhook_url"`
+	HAURL             string `json:"ha_url"`
+	HAToken           string `json:"ha_token"`
 }
 
 // settingsUpdate uses pointers so PUT can be partial: only supplied fields
@@ -27,6 +29,8 @@ type settingsUpdate struct {
 	UnitSystem        *string `json:"unit_system"`
 	ShowDashboard     *bool   `json:"show_dashboard"`
 	DiscordWebhookURL *string `json:"discord_webhook_url"`
+	HAURL             *string `json:"ha_url"`
+	HAToken           *string `json:"ha_token"`
 }
 
 func (h *handlers) registerSettings(mux *http.ServeMux) {
@@ -55,11 +59,25 @@ func (h *handlers) registerSettings(mux *http.ServeMux) {
 			writeError(w, http.StatusInternalServerError, "failed to read settings")
 			return
 		}
+		haURL, err := h.store.GetSetting(SettingHAURL)
+		if err != nil {
+			h.log.Error("get ha url", "error", err)
+			writeError(w, http.StatusInternalServerError, "failed to read settings")
+			return
+		}
+		haToken, err := h.store.GetSetting(SettingHAToken)
+		if err != nil {
+			h.log.Error("get ha token", "error", err)
+			writeError(w, http.StatusInternalServerError, "failed to read settings")
+			return
+		}
 		writeJSON(w, http.StatusOK, settingsResponse{
 			Currency:          currency,
 			UnitSystem:        units.String(),
 			ShowDashboard:     show,
 			DiscordWebhookURL: webhook,
+			HAURL:             haURL,
+			HAToken:           haToken,
 		})
 	}
 
@@ -97,6 +115,20 @@ func (h *handlers) registerSettings(mux *http.ServeMux) {
 		if upd.DiscordWebhookURL != nil {
 			if err := h.store.PutSetting(notify.SettingWebhookURL, *upd.DiscordWebhookURL); err != nil {
 				h.log.Error("put discord webhook", "error", err)
+				writeError(w, http.StatusUnprocessableEntity, err.Error())
+				return
+			}
+		}
+		if upd.HAURL != nil {
+			if err := h.store.PutSetting(SettingHAURL, *upd.HAURL); err != nil {
+				h.log.Error("put ha url", "error", err)
+				writeError(w, http.StatusUnprocessableEntity, err.Error())
+				return
+			}
+		}
+		if upd.HAToken != nil {
+			if err := h.store.PutSetting(SettingHAToken, *upd.HAToken); err != nil {
+				h.log.Error("put ha token", "error", err)
 				writeError(w, http.StatusUnprocessableEntity, err.Error())
 				return
 			}

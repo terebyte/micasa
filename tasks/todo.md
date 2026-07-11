@@ -23,8 +23,9 @@
 - [x] P3 embed 단일 바이너리(web/embed.go + SPA fallback) + deploy/web/Dockerfile + docker-compose.web.yml
 - [ ] P3 실배포: 우분투에서 compose up + 데이터 볼륨 이전 (사람 작업)
 - [x] 디스코드 알림: 웹훅 설정(설정 화면) + 테스트 발송 + 매일 9시 유지보수/문제 다이제스트 (internal/notify + cmd/web/reminder.go)
-- [ ] P4 도면/배치도 + HA 연동(상태·제어 프록시, micasa=일상 뷰 / HA=엔진 역할 분담)
-- [ ] Room 엔티티 (/add-entity 체크리스트 준수, P4 선행) + 정기지출 엔티티
+- [x] P4 도면/배치도: Room·FloorPlan·PlanMarker 엔티티 + 도면 이미지(Document 재활용) + 마커 오버레이 UI(편집/보기 모드) + HA 프록시(status/states/toggle) + 설정 HA 연동 (설계: plans/floorplan.md)
+- [ ] P4 잔여: TUI 탭(rooms/plans) 배선 - 웹 퍼스트라 보류(plans/floorplan.md 근거), FTS에 rooms 추가 여부
+- [ ] 정기지출 엔티티
 - [ ] 문서-가전 연결 UI (API는 entity_kind/entity_id 지원됨)
 - [ ] auth(household 로그인) 추가
 - [ ] 프론트 vitest 테스트

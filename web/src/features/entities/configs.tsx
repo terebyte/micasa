@@ -4,6 +4,17 @@ import { formatCents, formatDate, isOverdue } from '../../lib/format'
 // Enum options reference i18n keys under enum.* so labels localize.
 const opt = (value: string, key: string) => ({ value, label: `enum.${key}` })
 
+export const roomsConfig: EntityConfig = {
+  apiPath: '/rooms',
+  i18nKey: 'room',
+  titleField: 'name',
+  fields: [
+    { key: 'name', labelKey: 'room.name', type: 'text', required: true },
+    { key: 'floor', labelKey: 'room.floor', type: 'number' },
+    { key: 'notes', labelKey: 'common.notes', type: 'textarea' },
+  ],
+}
+
 export const vendorsConfig: EntityConfig = {
   apiPath: '/vendors',
   i18nKey: 'vendor',

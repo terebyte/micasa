@@ -545,3 +545,81 @@ func (x *Document) AfterCreate(tx *gorm.DB) error {
 	}
 	return writeOplogEntry(tx, TableDocuments, x.ID, OpInsert, newDocumentOplogPayload(*x))
 }
+
+// Floor plan module: rooms, plans, and plan markers (see plans/floorplan.md).
+
+const (
+	DeletionEntityRoom       = "room"
+	DeletionEntityFloorPlan  = "floor_plan"
+	DeletionEntityPlanMarker = "plan_marker"
+)
+
+// DocumentEntityFloorPlan links a Document (the plan image) to a FloorPlan.
+const DocumentEntityFloorPlan = "floor_plan"
+
+// Marker kinds for PlanMarker.Kind.
+const (
+	MarkerKindRoom      = "room"
+	MarkerKindAppliance = "appliance"
+	MarkerKindHA        = "ha"
+)
+
+type Room struct {
+	ID        string         `gorm:"primaryKey;size:26" json:"id"`
+	Name      string         `                          json:"name"`
+	Floor     int            `                          json:"floor"`
+	Notes     string         `                          json:"notes"`
+	CreatedAt time.Time      `                          json:"created_at"`
+	UpdatedAt time.Time      `                          json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index"              json:"-"`
+}
+
+type FloorPlan struct {
+	ID        string         `gorm:"primaryKey;size:26" json:"id"`
+	Name      string         `                          json:"name"`
+	Floor     int            `                          json:"floor"`
+	CreatedAt time.Time      `                          json:"created_at"`
+	UpdatedAt time.Time      `                          json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index"              json:"-"`
+}
+
+// PlanMarker pins a target onto a floor plan. X and Y are percentages
+// (0-100) of the plan image so markers are display-size independent.
+type PlanMarker struct {
+	ID          string         `gorm:"primaryKey;size:26"            json:"id"`
+	FloorPlanID string         `gorm:"index"                         json:"floor_plan_id"`
+	FloorPlan   FloorPlan      `gorm:"constraint:OnDelete:RESTRICT;" json:"-"`
+	X           float64        `                                     json:"x"`
+	Y           float64        `                                     json:"y"`
+	Label       string         `                                     json:"label"`
+	Kind        string         `                                     json:"kind"`
+	RoomID      *string        `gorm:"index"                         json:"room_id"`
+	Room        Room           `gorm:"constraint:OnDelete:SET NULL;" json:"-"`
+	ApplianceID *string        `gorm:"index"                         json:"appliance_id"`
+	Appliance   Appliance      `gorm:"constraint:OnDelete:SET NULL;" json:"-"`
+	HAEntity    string         `                                     json:"ha_entity"`
+	CreatedAt   time.Time      `                                     json:"created_at"`
+	UpdatedAt   time.Time      `                                     json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index"                         json:"-"`
+}
+
+func (x *Room) BeforeCreate(_ *gorm.DB) error {
+	if x.ID == "" {
+		x.ID = uid.New()
+	}
+	return nil
+}
+
+func (x *FloorPlan) BeforeCreate(_ *gorm.DB) error {
+	if x.ID == "" {
+		x.ID = uid.New()
+	}
+	return nil
+}
+
+func (x *PlanMarker) BeforeCreate(_ *gorm.DB) error {
+	if x.ID == "" {
+		x.ID = uid.New()
+	}
+	return nil
+}

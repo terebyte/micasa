@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
-import { Hammer, LayoutDashboard, Menu, Moon, Refrigerator, Search, Sun, Wrench } from 'lucide-react'
+import { Hammer, LayoutDashboard, Map, Menu, Moon, Refrigerator, Search, Sun, Wrench } from 'lucide-react'
 import { Button } from './components/ui/button'
 import { cn } from './lib/utils'
 import { DashboardPage } from './features/dashboard/DashboardPage'
@@ -12,9 +12,11 @@ import {
   maintenanceConfig,
   projectsConfig,
   quotesConfig,
+  roomsConfig,
   serviceLogsConfig,
   vendorsConfig,
 } from './features/entities/configs'
+import { FloorplanPage } from './features/floorplan/FloorplanPage'
 import { DocumentsPage } from './features/documents/DocumentsPage'
 import { HousePage } from './features/house/HousePage'
 import { SettingsPage } from './features/settings/SettingsPage'
@@ -30,13 +32,18 @@ function useDarkMode() {
   return { dark, toggle: () => setDark((d) => !d) }
 }
 
+// Mobile bottom bar fits five; projects lives under 더보기 there. The
+// desktop sidebar has room for everything.
 const tabs = [
   { to: '/', icon: LayoutDashboard, key: 'nav.home' },
+  { to: '/floorplan', icon: Map, key: 'nav.floorplan' },
   { to: '/maintenance', icon: Wrench, key: 'nav.maintenance' },
-  { to: '/projects', icon: Hammer, key: 'nav.projects' },
+  { to: '/projects', icon: Hammer, key: 'nav.projects', desktopOnly: true },
   { to: '/appliances', icon: Refrigerator, key: 'nav.appliances' },
   { to: '/more', icon: Menu, key: 'nav.more' },
-]
+] as const
+
+const mobileTabs = tabs.filter((t) => !('desktopOnly' in t && t.desktopOnly))
 
 function Shell() {
   const { t } = useTranslation()
@@ -88,6 +95,8 @@ function Shell() {
         <main className="min-w-0 max-w-6xl flex-1 px-4 py-5 pb-24 sm:px-8 sm:pb-8">
           <Routes>
             <Route path="/" element={<DashboardPage />} />
+            <Route path="/floorplan" element={<FloorplanPage />} />
+            <Route path="/more/rooms" element={<GenericEntityPage config={roomsConfig} />} />
             <Route path="/maintenance" element={<GenericEntityPage config={maintenanceConfig} />} />
             <Route path="/projects" element={<GenericEntityPage config={projectsConfig} />} />
             <Route path="/appliances" element={<AppliancesPage />} />
@@ -106,7 +115,7 @@ function Shell() {
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur sm:hidden">
         <div className="mx-auto grid max-w-5xl grid-cols-5 pb-[env(safe-area-inset-bottom)]">
-          {tabs.map(({ to, icon: Icon, key }) => (
+          {mobileTabs.map(({ to, icon: Icon, key }) => (
             <NavLink
               key={to}
               to={to}

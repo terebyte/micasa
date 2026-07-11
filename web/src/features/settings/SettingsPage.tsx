@@ -10,6 +10,8 @@ interface Settings {
   unit_system: string
   show_dashboard: boolean
   discord_webhook_url: string
+  ha_url: string
+  ha_token: string
 }
 
 export function SettingsPage() {
@@ -23,14 +25,19 @@ export function SettingsPage() {
   const [currency, setCurrency] = useState('')
   const [units, setUnits] = useState('metric')
   const [webhook, setWebhook] = useState('')
+  const [haURL, setHAURL] = useState('')
+  const [haToken, setHAToken] = useState('')
   const [saved, setSaved] = useState(false)
   const [testResult, setTestResult] = useState<'ok' | 'fail' | null>(null)
+  const [haResult, setHAResult] = useState<'ok' | 'fail' | null>(null)
 
   useEffect(() => {
     if (!data) return
     setCurrency(data.currency)
     setUnits(data.unit_system)
     setWebhook(data.discord_webhook_url)
+    setHAURL(data.ha_url)
+    setHAToken(data.ha_token)
   }, [data])
 
   const save = useMutation({
@@ -45,6 +52,12 @@ export function SettingsPage() {
     mutationFn: () => api.post<void>('/notify/test', {}),
     onSuccess: () => setTestResult('ok'),
     onError: () => setTestResult('fail'),
+  })
+
+  const haCheck = useMutation({
+    mutationFn: () => api.get<{ status: string }>('/ha/status'),
+    onSuccess: () => setHAResult('ok'),
+    onError: () => setHAResult('fail'),
   })
 
   return (
@@ -101,12 +114,54 @@ export function SettingsPage() {
           </div>
         </div>
 
+        <div className="rounded-lg border p-4">
+          <h2 className="mb-1 font-medium">{t('settings.haTitle')}</h2>
+          <p className="mb-3 text-sm text-muted-foreground">{t('settings.haHint')}</p>
+          <div className="space-y-3">
+            <label className="block">
+              <span className="mb-1.5 block text-sm font-medium text-body">{t('settings.haUrl')}</span>
+              <Input value={haURL} onChange={(e) => setHAURL(e.target.value)} placeholder="http://192.168.0.10:8123" />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-sm font-medium text-body">{t('settings.haToken')}</span>
+              <Input type="password" value={haToken} onChange={(e) => setHAToken(e.target.value)} />
+            </label>
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={haCheck.isPending}
+              onClick={() => {
+                setHAResult(null)
+                haCheck.mutate()
+              }}
+            >
+              {t('settings.checkConnection')}
+            </Button>
+            {haResult === 'ok' ? (
+              <span className="text-sm text-muted-foreground">{t('settings.haOk')}</span>
+            ) : null}
+            {haResult === 'fail' ? (
+              <span className="text-sm text-destructive">
+                {haCheck.error?.message ?? t('common.error')}
+              </span>
+            ) : null}
+          </div>
+        </div>
+
         {save.error ? <p className="text-sm text-destructive">{save.error.message}</p> : null}
         <div className="flex items-center gap-3">
           <Button
             onClick={() => {
               setSaved(false)
-              save.mutate({ currency, unit_system: units, discord_webhook_url: webhook })
+              save.mutate({
+                currency,
+                unit_system: units,
+                discord_webhook_url: webhook,
+                ha_url: haURL,
+                ha_token: haToken,
+              })
             }}
             disabled={save.isPending}
           >

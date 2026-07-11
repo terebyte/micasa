@@ -24,8 +24,27 @@ const uploadMemoryLimit = 32 << 20
 
 func (h *handlers) registerDocuments(mux *http.ServeMux) {
 	// Metadata list excludes BLOB data (store selects metadata columns).
-	mux.HandleFunc("GET /api/documents", listHandler(h.log, "document",
-		func() ([]data.Document, error) { return h.store.ListDocuments(false) }))
+	// Optional ?entity_kind=&entity_id= narrows to one entity's documents
+	// (e.g. a floor plan's image).
+	mux.HandleFunc("GET /api/documents", func(w http.ResponseWriter, r *http.Request) {
+		kind := r.URL.Query().Get("entity_kind")
+		id := r.URL.Query().Get("entity_id")
+		var (
+			docs []data.Document
+			err  error
+		)
+		if kind != "" || id != "" {
+			docs, err = h.store.ListDocumentsByEntity(kind, id, false)
+		} else {
+			docs, err = h.store.ListDocuments(false)
+		}
+		if err != nil {
+			h.log.Error("list documents", "error", err)
+			writeError(w, http.StatusInternalServerError, "failed to list documents")
+			return
+		}
+		writeJSON(w, http.StatusOK, docs)
+	})
 	mux.HandleFunc("GET /api/documents/{id}", getHandler(h.log, "document", h.store.GetDocumentMetadata))
 	mux.HandleFunc("DELETE /api/documents/{id}", deleteHandler(h.log, "document", h.store.DeleteDocument))
 

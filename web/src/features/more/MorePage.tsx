@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom'
 import {
   AlertTriangle,
   ChevronRight,
+  DoorOpen,
   FileText,
+  Hammer,
   Home,
   ReceiptText,
   Settings,
@@ -13,6 +15,8 @@ import {
 import { Card } from '../../components/ui/card'
 
 const items = [
+  { to: '/projects', icon: Hammer, key: 'more.projects' },
+  { to: '/more/rooms', icon: DoorOpen, key: 'more.rooms' },
   { to: '/more/quotes', icon: ReceiptText, key: 'more.quotes' },
   { to: '/more/vendors', icon: Store, key: 'more.vendors' },
   { to: '/more/service-logs', icon: Wrench, key: 'more.serviceLogs' },

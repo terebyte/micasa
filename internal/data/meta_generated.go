@@ -11,13 +11,16 @@ const (
 	TableChatInputs            = "chat_inputs"
 	TableDeletionRecords       = "deletion_records"
 	TableDocuments             = "documents"
+	TableFloorPlans            = "floor_plans"
 	TableHouseProfiles         = "house_profiles"
 	TableIncidents             = "incidents"
 	TableMaintenanceCategories = "maintenance_categories"
 	TableMaintenanceItems      = "maintenance_items"
+	TablePlanMarkers           = "plan_markers"
 	TableProjectTypes          = "project_types"
 	TableProjects              = "projects"
 	TableQuotes                = "quotes"
+	TableRooms                 = "rooms"
 	TableServiceLogEntries     = "service_log_entries"
 	TableSettings              = "settings"
 	TableSyncDevices           = "sync_devices"
@@ -62,7 +65,10 @@ const (
 	ColExtractionModel   = "extraction_model"
 	ColExtractionOps     = "extraction_ops"
 	ColFileName          = "file_name"
+	ColFloor             = "floor"
+	ColFloorPlanID       = "floor_plan_id"
 	ColFoundationType    = "foundation_type"
+	ColHAEntity          = "ha_entity"
 	ColHOAFeeCents       = "hoa_fee_cents"
 	ColHOAName           = "hoa_name"
 	ColHeatingType       = "heating_type"
@@ -74,6 +80,8 @@ const (
 	ColInsuranceRenewal  = "insurance_renewal"
 	ColIntervalMonths    = "interval_months"
 	ColKey               = "key"
+	ColKind              = "kind"
+	ColLabel             = "label"
 	ColLaborCents        = "labor_cents"
 	ColLastSeq           = "last_seq"
 	ColLastServicedAt    = "last_serviced_at"
@@ -104,6 +112,7 @@ const (
 	ColRelayURL          = "relay_url"
 	ColRestoredAt        = "restored_at"
 	ColRoofType          = "roof_type"
+	ColRoomID            = "room_id"
 	ColRowID             = "row_id"
 	ColSeason            = "season"
 	ColSerialNumber      = "serial_number"
@@ -127,6 +136,8 @@ const (
 	ColWaterSource       = "water_source"
 	ColWebsite           = "website"
 	ColWiringType        = "wiring_type"
+	ColX                 = "x"
+	ColY                 = "y"
 	ColYearBuilt         = "year_built"
 )
 
@@ -150,6 +161,9 @@ func Models() []any {
 		&ChatInput{},
 		&SyncOplogEntry{},
 		&SyncDevice{},
+		&Room{},
+		&FloorPlan{},
+		&PlanMarker{},
 	}
 }
 
@@ -187,6 +201,10 @@ var TableExtractColumns = map[string][]metaColumn{
 		{Name: "entity_kind", JSONType: "string"},
 		{Name: "entity_id", JSONType: "string"},
 		{Name: "notes", JSONType: "string"},
+	},
+	TableFloorPlans: {
+		{Name: "name", JSONType: "string"},
+		{Name: "floor", JSONType: "integer"},
 	},
 	TableHouseProfiles: {
 		{Name: "nickname", JSONType: "string"},
@@ -241,6 +259,16 @@ var TableExtractColumns = map[string][]metaColumn{
 		{Name: "notes", JSONType: "string"},
 		{Name: "cost_cents", JSONType: "integer"},
 	},
+	TablePlanMarkers: {
+		{Name: "floor_plan_id", JSONType: "string"},
+		{Name: "x", JSONType: "integer"},
+		{Name: "y", JSONType: "integer"},
+		{Name: "label", JSONType: "string"},
+		{Name: "kind", JSONType: "string"},
+		{Name: "room_id", JSONType: "string"},
+		{Name: "appliance_id", JSONType: "string"},
+		{Name: "ha_entity", JSONType: "string"},
+	},
 	TableProjectTypes: {
 		{Name: "name", JSONType: "string"},
 	},
@@ -257,6 +285,11 @@ var TableExtractColumns = map[string][]metaColumn{
 		{Name: "total_cents", JSONType: "integer"},
 		{Name: "labor_cents", JSONType: "integer"},
 		{Name: "materials_cents", JSONType: "integer"},
+		{Name: "notes", JSONType: "string"},
+	},
+	TableRooms: {
+		{Name: "name", JSONType: "string"},
+		{Name: "floor", JSONType: "integer"},
 		{Name: "notes", JSONType: "string"},
 	},
 	TableServiceLogEntries: {
