@@ -60,25 +60,49 @@ function Shell() {
         </div>
       </header>
 
-      <main className="flex-1 px-4 py-5 pb-24 sm:px-6">
-        <Routes>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/maintenance" element={<GenericEntityPage config={maintenanceConfig} />} />
-          <Route path="/projects" element={<GenericEntityPage config={projectsConfig} />} />
-          <Route path="/appliances" element={<AppliancesPage />} />
-          <Route path="/more" element={<MorePage />} />
-          <Route path="/more/quotes" element={<GenericEntityPage config={quotesConfig} />} />
-          <Route path="/more/vendors" element={<GenericEntityPage config={vendorsConfig} />} />
-          <Route path="/more/incidents" element={<GenericEntityPage config={incidentsConfig} />} />
-          <Route path="/more/service-logs" element={<GenericEntityPage config={serviceLogsConfig} />} />
-          <Route path="/more/documents" element={<DocumentsPage />} />
-          <Route path="/more/house" element={<HousePage />} />
-          <Route path="/more/settings" element={<SettingsPage />} />
-          <Route path="*" element={<DashboardPage />} />
-        </Routes>
-      </main>
+      <div className="flex flex-1">
+        {/* Desktop: left sidebar. Mobile: hidden (bottom tabs instead). */}
+        <aside className="sticky top-14 hidden h-[calc(100dvh-3.5rem)] w-52 shrink-0 border-r py-4 pr-2 sm:block">
+          <nav className="space-y-1">
+            {tabs.map(({ to, icon: Icon, key }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={to === '/'}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
+                    isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted/60',
+                  )
+                }
+              >
+                <Icon className="h-4 w-4" />
+                {t(key)}
+              </NavLink>
+            ))}
+          </nav>
+        </aside>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur">
+        <main className="min-w-0 flex-1 px-4 py-5 pb-24 sm:px-6 sm:pb-8">
+          <Routes>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/maintenance" element={<GenericEntityPage config={maintenanceConfig} />} />
+            <Route path="/projects" element={<GenericEntityPage config={projectsConfig} />} />
+            <Route path="/appliances" element={<AppliancesPage />} />
+            <Route path="/more" element={<MorePage />} />
+            <Route path="/more/quotes" element={<GenericEntityPage config={quotesConfig} />} />
+            <Route path="/more/vendors" element={<GenericEntityPage config={vendorsConfig} />} />
+            <Route path="/more/incidents" element={<GenericEntityPage config={incidentsConfig} />} />
+            <Route path="/more/service-logs" element={<GenericEntityPage config={serviceLogsConfig} />} />
+            <Route path="/more/documents" element={<DocumentsPage />} />
+            <Route path="/more/house" element={<HousePage />} />
+            <Route path="/more/settings" element={<SettingsPage />} />
+            <Route path="*" element={<DashboardPage />} />
+          </Routes>
+        </main>
+      </div>
+
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur sm:hidden">
         <div className="mx-auto grid max-w-5xl grid-cols-5 pb-[env(safe-area-inset-bottom)]">
           {tabs.map(({ to, icon: Icon, key }) => (
             <NavLink
