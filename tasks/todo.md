@@ -18,7 +18,11 @@
 - [ ] 사용자 육안 확인 (브라우저/모바일 뷰포트)
 
 ## 이후 (상위)
-- [ ] P1 나머지 엔티티 + dashboard/status + 검색
-- [ ] P2 chat + settings
-- [ ] P3 embed + Docker + 우분투 배포
+- [x] P1 나머지 엔티티 CRUD(업체/프로젝트/유지보수/문제/견적/정비기록/문서/집) + 대시보드(홈) + FTS 검색
+- [x] P2 settings (통화/단위계). **chat 웹은 범위 제외**: 로컬 LLM 파이프라인·스트리밍 필요, TUI 전용 유지 (추후 별도 페이즈)
+- [x] P3 embed 단일 바이너리(web/embed.go + SPA fallback) + deploy/web/Dockerfile + docker-compose.web.yml
+- [ ] P3 실배포: 우분투에서 compose up + 데이터 볼륨 이전 (사람 작업)
 - [ ] P4 도면/배치도 + HA 연동
+- [ ] auth(household 로그인) 추가
+- [ ] 프론트 vitest 테스트
+- [ ] money 입력(원 x100=cents)과 TUI KRW 파싱 일치 검증

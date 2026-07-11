@@ -24,6 +24,7 @@ func newTestServer(t *testing.T) *httptest.Server {
 	path := filepath.Join(t.TempDir(), "test.db")
 	store, err := data.Open(path)
 	require.NoError(t, err)
+	require.NoError(t, store.SetMaxDocumentSize(50<<20))
 	require.NoError(t, store.AutoMigrate())
 	require.NoError(t, store.SeedDefaults())
 	t.Cleanup(func() { _ = store.Close() })

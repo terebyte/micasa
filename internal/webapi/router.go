@@ -20,14 +20,65 @@ func NewRouter(store *data.Store, log *slog.Logger) http.Handler {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", h.health)
+	mux.HandleFunc("GET /api/dashboard", h.dashboard)
+	mux.HandleFunc("GET /api/search", h.search)
 
-	mux.HandleFunc("GET /api/appliances", h.listAppliances)
-	mux.HandleFunc("POST /api/appliances", h.createAppliance)
-	mux.HandleFunc("GET /api/appliances/{id}", h.getAppliance)
-	mux.HandleFunc("PUT /api/appliances/{id}", h.updateAppliance)
-	mux.HandleFunc("DELETE /api/appliances/{id}", h.deleteAppliance)
+	registerEntity(mux, log, "/api/appliances", "appliance", entityOps[data.Appliance]{
+		list:   func() ([]data.Appliance, error) { return store.ListAppliances(false) },
+		get:    store.GetAppliance,
+		create: store.CreateAppliance,
+		update: store.UpdateAppliance,
+		remove: store.DeleteAppliance,
+		setID:  func(a *data.Appliance, id string) { a.ID = id },
+	})
+	registerEntity(mux, log, "/api/vendors", "vendor", entityOps[data.Vendor]{
+		list:   func() ([]data.Vendor, error) { return store.ListVendors(false) },
+		get:    store.GetVendor,
+		create: store.CreateVendor,
+		update: store.UpdateVendor,
+		remove: store.DeleteVendor,
+		setID:  func(v *data.Vendor, id string) { v.ID = id },
+	})
+	registerEntity(mux, log, "/api/projects", "project", entityOps[data.Project]{
+		list:   func() ([]data.Project, error) { return store.ListProjects(false) },
+		get:    store.GetProject,
+		create: store.CreateProject,
+		update: store.UpdateProject,
+		remove: store.DeleteProject,
+		setID:  func(p *data.Project, id string) { p.ID = id },
+	})
+	registerEntity(mux, log, "/api/maintenance", "maintenance item", entityOps[data.MaintenanceItem]{
+		list:   func() ([]data.MaintenanceItem, error) { return store.ListMaintenance(false) },
+		get:    store.GetMaintenance,
+		create: store.CreateMaintenance,
+		update: store.UpdateMaintenance,
+		remove: store.DeleteMaintenance,
+		setID:  func(m *data.MaintenanceItem, id string) { m.ID = id },
+	})
+	registerEntity(mux, log, "/api/incidents", "incident", entityOps[data.Incident]{
+		list:   func() ([]data.Incident, error) { return store.ListIncidents(false) },
+		get:    store.GetIncident,
+		create: store.CreateIncident,
+		update: store.UpdateIncident,
+		remove: store.DeleteIncident,
+		setID:  func(i *data.Incident, id string) { i.ID = id },
+	})
+
+	registerListOnly(mux, log, "/api/project-types", "project type", store.ProjectTypes)
+	registerListOnly(mux, log, "/api/maintenance-categories", "maintenance category", store.MaintenanceCategories)
+
+	h.registerQuotes(mux)
+	h.registerServiceLogs(mux)
+	h.registerHouse(mux)
+	h.registerSettings(mux)
+	h.registerDocuments(mux)
 
 	return withCORS(mux)
+}
+
+// registerListOnly wires a read-only list route (seeded lookup tables).
+func registerListOnly[T any](mux *http.ServeMux, log *slog.Logger, basePath, name string, list func() ([]T, error)) {
+	mux.HandleFunc("GET "+basePath, listHandler(log, name, list))
 }
 
 type handlers struct {

@@ -10,6 +10,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
@@ -19,6 +20,7 @@ import (
 
 	"github.com/micasa-dev/micasa/internal/data"
 	"github.com/micasa-dev/micasa/internal/webapi"
+	"github.com/micasa-dev/micasa/web"
 )
 
 func main() {
@@ -41,6 +43,12 @@ func main() {
 	}
 	defer store.Close()
 
+	// Matches the TUI's default document size ceiling (config-driven there).
+	if err := store.SetMaxDocumentSize(50 << 20); err != nil {
+		log.Error("set max document size", "error", err)
+		os.Exit(1)
+	}
+
 	// AutoMigrate is idempotent: a no-op on an already-migrated database,
 	// and required to bootstrap a fresh one for development.
 	if err := store.AutoMigrate(); err != nil {
@@ -58,9 +66,22 @@ func main() {
 		}
 	}
 
+	// Build the FTS index so /api/search works; household-scale data makes
+	// a full rebuild at boot effectively free.
+	if err := store.RebuildFTSIndex(); err != nil {
+		log.Error("rebuild fts index", "error", err)
+		os.Exit(1)
+	}
+
+	dist, err := fs.Sub(web.Dist, "dist")
+	if err != nil {
+		log.Error("embedded dist", "error", err)
+		os.Exit(1)
+	}
+
 	srv := &http.Server{
 		Addr:              *addr,
-		Handler:           webapi.NewRouter(store, log),
+		Handler:           withSPA(webapi.NewRouter(store, log), spaHandler(dist)),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 

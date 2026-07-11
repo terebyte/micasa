@@ -1,0 +1,22 @@
+# Copyright 2026 Phillip Cloud
+# Licensed under the Apache License, Version 2.0
+
+# micasa web (API + SPA) for home-server deployment (e.g. Ubuntu box).
+# Data lives in the named volume; migrating hosts = copying that volume
+# (or the single micasa.db file inside it).
+#
+#   docker compose -f deploy/docker-compose.web.yml up -d --build
+
+services:
+  micasa-web:
+    build:
+      context: ..
+      dockerfile: deploy/web/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - micasa-data:/data
+    restart: unless-stopped
+
+volumes:
+  micasa-data:
