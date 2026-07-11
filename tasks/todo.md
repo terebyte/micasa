@@ -7,13 +7,15 @@
 - [x] P0-2 Appliance read API (list/get)
 - [x] P0-3 Appliance write API (create/update/delete)
 - [x] P0-4 dev 설정(CORS/JSON 에러 봉투)
-- [~] ▶ 체크포인트 A: 백엔드 CRUD curl 검증 완료. **httptest 자동테스트 추가 남음** - 사용자 확인 대기
+- [x] ▶ 체크포인트 A: 백엔드 CRUD (httptest green + curl 검증)
 
 ## P0 (프론트)
-- [ ] P0-5 React 셸 (Vite/TS/Tailwind/shadcn/i18n-ko/PWA/모바일)
-- [ ] P0-6 Appliance 목록 화면
-- [ ] P0-7 Appliance 생성/수정/삭제 UI
-- [ ] ▶ 체크포인트 B: 수직슬라이스 완성 + TUI 패리티 확인 - 사용자 확인
+- [x] P0-5 React 셸 (Vite/TS/Tailwind/i18n-ko/PWA/모바일, 토큰: cal.com 라이트 + Notion 틴트 + Linear 다크)
+- [x] P0-6 Appliance 목록 화면
+- [x] P0-7 Appliance 생성/수정/삭제 UI
+- [x] ▶ 체크포인트 B: 웹 API로 생성한 데이터를 `micasa show appliances` 로 조회 (공유코어 패리티 실증)
+- [ ] 프론트 vitest 테스트 (다음 단계)
+- [ ] 사용자 육안 확인 (브라우저/모바일 뷰포트)
 
 ## 이후 (상위)
 - [ ] P1 나머지 엔티티 + dashboard/status + 검색
