@@ -44,7 +44,7 @@ function Shell() {
   const [searchOpen, setSearchOpen] = useState(false)
 
   return (
-    <div className="mx-auto flex min-h-full max-w-5xl flex-col">
+    <div className="flex min-h-full flex-col">
       <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b bg-background/90 px-4 backdrop-blur sm:px-6">
         <div className="flex items-baseline gap-2">
           <span className="font-semibold tracking-tight">{t('app.title')}</span>
@@ -62,7 +62,7 @@ function Shell() {
 
       <div className="flex flex-1">
         {/* Desktop: left sidebar. Mobile: hidden (bottom tabs instead). */}
-        <aside className="sticky top-14 hidden h-[calc(100dvh-3.5rem)] w-52 shrink-0 border-r py-4 pr-2 sm:block">
+        <aside className="sticky top-14 hidden h-[calc(100dvh-3.5rem)] w-52 shrink-0 border-r px-2 py-4 sm:block">
           <nav className="space-y-1">
             {tabs.map(({ to, icon: Icon, key }) => (
               <NavLink
@@ -83,7 +83,9 @@ function Shell() {
           </nav>
         </aside>
 
-        <main className="min-w-0 flex-1 px-4 py-5 pb-24 sm:px-6 sm:pb-8">
+        {/* Full-width app frame; content itself caps at a readable width
+            (left-aligned next to the sidebar, Linear-style). */}
+        <main className="min-w-0 max-w-6xl flex-1 px-4 py-5 pb-24 sm:px-8 sm:pb-8">
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/maintenance" element={<GenericEntityPage config={maintenanceConfig} />} />
