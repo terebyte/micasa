@@ -31,3 +31,5 @@
 - [ ] auth(household 로그인) 추가
 - [ ] 프론트 vitest 테스트
 - [ ] money 입력(원 x100=cents)과 TUI KRW 파싱 일치 검증
+- [x] 변동 지출: ExpenseRecord(월별 청구액) + 부과서 스캔 첨부 + 삭제 보호
+- [ ] 부과서 LLM 자동 파싱 (internal/extract 재활용, 로컬 LLM 연결 시)

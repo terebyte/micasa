@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { EntityConfig } from './framework'
 import { formatCents, formatDate, isOverdue } from '../../lib/format'
 
@@ -81,10 +82,18 @@ export const expensesConfig: EntityConfig = {
     { key: 'notes', labelKey: 'common.notes', type: 'textarea' },
   ],
   cardMeta: (item, t) => (
-    <p className="text-sm text-muted-foreground">
-      {formatCents(item.amount_cents as number)} / {t(`enum.interval.${String(item.interval)}`)}
-      {item.paused ? ` · ${t('expense.pausedBadge')}` : ''}
-    </p>
+    <div className="flex items-center justify-between gap-2">
+      <p className="text-sm text-muted-foreground">
+        {formatCents(item.amount_cents as number)} / {t(`enum.interval.${String(item.interval)}`)}
+        {item.paused ? ` · ${t('expense.pausedBadge')}` : ''}
+      </p>
+      <Link
+        to={`/more/expenses/${String(item.id)}/records`}
+        className="shrink-0 text-sm font-medium text-foreground underline-offset-2 hover:underline"
+      >
+        {t('expense.records')} →
+      </Link>
+    </div>
   ),
 }
 

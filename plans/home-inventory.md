@@ -36,3 +36,16 @@ inventory doubles as the packing list).
 
 Same as plans/floorplan.md: web-first surfaces, TUI wiring deferred, not
 in the LLM extraction context, not in FTS yet.
+
+## Expense records (variable bills)
+
+Utility-style expenses (HOA fee, electricity) vary per month, so a
+`RecurringExpense` owns `ExpenseRecord` rows: period (`YYYY-MM`), actual
+amount, notes, and the scanned bill attached as a Document
+(`entity_kind = "expense_record"`). Deleting an expense is blocked while
+records exist (bills are records worth keeping). The web UI reaches
+records from each expense card.
+
+Automatic parsing of scanned bills will reuse the existing extraction
+pipeline (`internal/extract`, OCR + LLM) in a later phase; per the
+LLM-is-opt-in rule the flow works fully with manual amounts today.

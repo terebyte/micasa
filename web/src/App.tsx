@@ -20,6 +20,7 @@ import {
   vendorsConfig,
 } from './features/entities/configs'
 import { FloorplanPage } from './features/floorplan/FloorplanPage'
+import { ExpenseRecordsPage } from './features/expenses/ExpenseRecordsPage'
 import { DocumentsPage } from './features/documents/DocumentsPage'
 import { HousePage } from './features/house/HousePage'
 import { SettingsPage } from './features/settings/SettingsPage'
@@ -103,6 +104,7 @@ function Shell() {
             <Route path="/more/assets" element={<GenericEntityPage config={assetsConfig} />} />
             <Route path="/more/consumables" element={<GenericEntityPage config={consumablesConfig} />} />
             <Route path="/more/expenses" element={<GenericEntityPage config={expensesConfig} />} />
+            <Route path="/more/expenses/:id/records" element={<ExpenseRecordsPage />} />
             <Route path="/maintenance" element={<GenericEntityPage config={maintenanceConfig} />} />
             <Route path="/projects" element={<GenericEntityPage config={projectsConfig} />} />
             <Route path="/appliances" element={<AppliancesPage />} />

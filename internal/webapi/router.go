@@ -102,6 +102,7 @@ func NewRouter(store *data.Store, log *slog.Logger) http.Handler {
 	registerListOnly(mux, log, "/api/maintenance-categories", "maintenance category", store.MaintenanceCategories)
 
 	h.registerFloorPlans(mux)
+	h.registerExpenseRecords(mux)
 	h.registerHA(mux)
 	h.registerQuotes(mux)
 	h.registerServiceLogs(mux)

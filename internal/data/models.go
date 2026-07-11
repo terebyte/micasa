@@ -715,3 +715,33 @@ func (x *RecurringExpense) BeforeCreate(_ *gorm.DB) error {
 	}
 	return nil
 }
+
+// Expense records: per-period actual amounts for a recurring expense
+// (utility bills vary month to month). The scanned bill attaches as a
+// Document (entity_kind = "expense_record").
+
+const DeletionEntityExpenseRecord = "expense_record"
+
+// DocumentEntityExpenseRecord links a Document (scanned bill) to an
+// ExpenseRecord.
+const DocumentEntityExpenseRecord = "expense_record"
+
+type ExpenseRecord struct {
+	ID          string           `gorm:"primaryKey;size:26"                                                            json:"id"`
+	ExpenseID   string           `gorm:"index"                                                                         json:"expense_id"`
+	Expense     RecurringExpense `gorm:"constraint:OnDelete:RESTRICT;"                                                 json:"-"`
+	Period      string           `gorm:"index"                                                                         json:"period"`
+	AmountCents int64            `                                                                                     json:"amount_cents"`
+	Notes       string           `                                                                                     json:"notes"`
+	Documents   []Document       `gorm:"polymorphic:Entity;polymorphicType:EntityKind;polymorphicValue:expense_record" json:"-"`
+	CreatedAt   time.Time        `                                                                                     json:"created_at"`
+	UpdatedAt   time.Time        `                                                                                     json:"updated_at"`
+	DeletedAt   gorm.DeletedAt   `gorm:"index"                                                                         json:"-"`
+}
+
+func (x *ExpenseRecord) BeforeCreate(_ *gorm.DB) error {
+	if x.ID == "" {
+		x.ID = uid.New()
+	}
+	return nil
+}

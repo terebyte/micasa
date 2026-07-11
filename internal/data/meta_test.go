@@ -32,8 +32,9 @@ func TestEntityKindToTableDerivedFromPolymorphicTags(t *testing.T) {
 		DocumentEntityAppliance:   TableAppliances,
 		DocumentEntityServiceLog:  TableServiceLogEntries,
 		DocumentEntityVendor:      TableVendors,
-		DocumentEntityIncident:    TableIncidents,
-		DocumentEntityAsset:       TableAssets,
+		DocumentEntityIncident:      TableIncidents,
+		DocumentEntityAsset:         TableAssets,
+		DocumentEntityExpenseRecord: TableExpenseRecords,
 	}
 	assert.Equal(t, expected, EntityKindToTable)
 }

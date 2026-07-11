@@ -74,3 +74,47 @@ func TestMonthlyFixedCost(t *testing.T) {
 	_ = dash.Body.Close()
 	assert.Equal(t, int64(4000000), body.Monthly, "30k + 120k/12 = 40k won in cents")
 }
+
+func TestExpenseRecordsLifecycle(t *testing.T) {
+	srv := newTestServer(t)
+
+	resp := doJSON(t, http.MethodPost, srv.URL+"/api/expenses",
+		`{"name":"관리비","amount_cents":20000000,"interval":"monthly"}`)
+	require.Equal(t, http.StatusCreated, resp.StatusCode)
+	expense := decode[data.RecurringExpense](t, resp)
+
+	resp = doJSON(t, http.MethodPost, srv.URL+"/api/expenses/"+expense.ID+"/records",
+		`{"period":"2026-07","amount_cents":18734000,"notes":"여름 전기 포함"}`)
+	require.Equal(t, http.StatusCreated, resp.StatusCode)
+	record := decode[data.ExpenseRecord](t, resp)
+	assert.Equal(t, "2026-07", record.Period)
+
+	resp, err := http.Get(srv.URL + "/api/expenses/" + expense.ID + "/records")
+	require.NoError(t, err)
+	assert.Len(t, decode[[]data.ExpenseRecord](t, resp), 1)
+
+	// Deleting the expense is blocked while records exist.
+	req, _ := http.NewRequest(http.MethodDelete, srv.URL+"/api/expenses/"+expense.ID, nil)
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusConflict, resp.StatusCode)
+	_ = resp.Body.Close()
+
+	req, _ = http.NewRequest(http.MethodDelete, srv.URL+"/api/expense-records/"+record.ID, nil)
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusNoContent, resp.StatusCode)
+
+	req, _ = http.NewRequest(http.MethodDelete, srv.URL+"/api/expenses/"+expense.ID, nil)
+	resp, err = http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+}
+
+func TestExpenseRecordOnMissingExpense(t *testing.T) {
+	srv := newTestServer(t)
+	resp := doJSON(t, http.MethodPost, srv.URL+"/api/expenses/nope/records",
+		`{"period":"2026-07","amount_cents":1}`)
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	_ = resp.Body.Close()
+}

@@ -13,6 +13,7 @@ const (
 	TableConsumables           = "consumables"
 	TableDeletionRecords       = "deletion_records"
 	TableDocuments             = "documents"
+	TableExpenseRecords        = "expense_records"
 	TableFloorPlans            = "floor_plans"
 	TableHouseProfiles         = "house_profiles"
 	TableIncidents             = "incidents"
@@ -66,6 +67,7 @@ const (
 	ColEntity            = "entity"
 	ColEntityID          = "entity_id"
 	ColEntityKind        = "entity_kind"
+	ColExpenseID         = "expense_id"
 	ColExteriorType      = "exterior_type"
 	ColExtractData       = "ocr_data"
 	ColExtractedText     = "extracted_text"
@@ -111,6 +113,7 @@ const (
 	ColParkingType       = "parking_type"
 	ColPaused            = "paused"
 	ColPayload           = "payload"
+	ColPeriod            = "period"
 	ColPhone             = "phone"
 	ColPostalCode        = "postal_code"
 	ColPreviousStatus    = "previous_status"
@@ -180,6 +183,7 @@ func Models() []any {
 		&Asset{},
 		&Consumable{},
 		&RecurringExpense{},
+		&ExpenseRecord{},
 	}
 }
 
@@ -234,6 +238,12 @@ var TableExtractColumns = map[string][]metaColumn{
 		{Name: "file_name", JSONType: "string"},
 		{Name: "entity_kind", JSONType: "string"},
 		{Name: "entity_id", JSONType: "string"},
+		{Name: "notes", JSONType: "string"},
+	},
+	TableExpenseRecords: {
+		{Name: "expense_id", JSONType: "string"},
+		{Name: "period", JSONType: "string"},
+		{Name: "amount_cents", JSONType: "integer"},
 		{Name: "notes", JSONType: "string"},
 	},
 	TableFloorPlans: {
